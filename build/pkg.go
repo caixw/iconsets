@@ -93,12 +93,37 @@ func createProps(outDir string, fx framework) ([]string, error) {
 	return props, nil
 }
 
-// 为当前框架创建一图标集
-func (p *pkg) createIconSet(iconset string) error {
-	fmt.Printf("准备创建图标集 %s\n", iconset)
-	defer fmt.Printf("完成创建图标集 %s\n", iconset)
+func (p *pkg) createIconSets(iconsets string) error {
+	sets := []string{}
 
-	f, err := p.zip.Open("icon-sets-" + p.ver + "/json/" + iconset + ".json")
+	if iconsets == "" {
+		for _, f := range p.zip.File {
+			name := f.Name
+			if strings.Contains(name, "/json/") && strings.HasSuffix(name, ".json") {
+				sets = append(sets, name)
+			}
+		}
+	} else {
+		for name := range strings.SplitSeq(iconsets, ",") {
+			sets = append(sets, "icon-sets-"+p.ver+"/json/"+name+".json")
+		}
+	}
+
+	for _, s := range sets {
+		if err := p.createIconSet(strings.TrimSpace(s)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// 为当前框架创建一图标集
+func (p *pkg) createIconSet(path string) error {
+	fmt.Printf("准备创建图标集 %s\n", path)
+	defer fmt.Printf("完成创建图标集 %s\n", path)
+
+	f, err := p.zip.Open(path)
 	if err != nil {
 		return err
 	}
@@ -113,16 +138,17 @@ func (p *pkg) createIconSet(iconset string) error {
 		return err
 	}
 
-	if err := p.genComponents(set, filepath.Join(p.outDir, iconset+".tsx")); err != nil {
+	name := strings.TrimSuffix(filepath.Base(path), ".json")
+	if err := p.genComponents(set, filepath.Join(p.outDir, name+".tsx")); err != nil {
 		return err
 	}
 
-	_, err = fmt.Fprintf(p.index, "export * as %s from './%s'\n", iconset, iconset)
+	_, err = fmt.Fprintf(p.index, "export * as %s from './%s'\n", path, path)
 	return err
 }
 
-func (p *pkg) genComponents(set *Set, root string) error {
-	f, err := os.Create(root)
+func (p *pkg) genComponents(set *Set, path string) error {
+	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}
@@ -148,7 +174,7 @@ func (p *pkg) genComponents(set *Set, root string) error {
 	}
 
 	for name, i := range set.Icons {
-		if err := p.fx.writeIcon(f, name, i); err != nil {
+		if err := p.fx.writeIcon(f, set, name, i); err != nil {
 			return err
 		}
 	}

@@ -24,6 +24,9 @@ type Set struct {
 		} `json:"license"`
 	} `json:"info"`
 
+	Width  float32 `json:"width,omitempty"`
+	Height float32 `json:"height,omitempty"`
+
 	Palette bool `json:"palette"` // 是否不可自定义颜色，true 表示不可自定义。
 
 	Icons   map[string]*Icon  `json:"icons"`
@@ -34,10 +37,10 @@ type Icon struct {
 	Body string `json:"body"`
 
 	// viewBox
-	Left   int `json:"left,omitempty"`   // 0
-	Top    int `json:"top,omitempty"`    // 0
-	Width  int `json:"width,omitempty"`  // 16
-	Height int `json:"height,omitempty"` // 16
+	Left   float32 `json:"left,omitempty"`   // 0
+	Top    float32 `json:"top,omitempty"`    // 0
+	Width  float32 `json:"width,omitempty"`  // 16
+	Height float32 `json:"height,omitempty"` // 16
 
 	// transform
 	Rotate int  `json:"rotate"` // 0, [0,90]
@@ -58,17 +61,25 @@ func toCamel(name string) string {
 	return strings.Join(words, "")
 }
 
-const svgFormat = `<svg xmlns="http://www.w3.org/2000/svg" width={props.width} height={props.height} viewBox="%d %d %d %d">
+const svgFormat = `<svg xmlns="http://www.w3.org/2000/svg" width={props.width} height={props.height} viewBox="%g %g %g %g">
 	%s
 </svg>`
 
 // 转换为 svg 图片
-func (i *Icon) write(w io.Writer) (err error) {
+func (s *Set) write(w io.Writer, i *Icon) (err error) {
 	if i.Width == 0 {
-		i.Width = 16
+		if s.Width > 0 {
+			i.Width = s.Width
+		} else {
+			i.Width = 16
+		}
 	}
 	if i.Height == 0 {
-		i.Height = 16
+		if s.Height > 0 {
+			i.Height = s.Height
+		} else {
+			i.Height = 16
+		}
 	}
 
 	transforms := []string{}
@@ -82,6 +93,7 @@ func (i *Icon) write(w io.Writer) (err error) {
 	}
 
 	switch i.Rotate {
+	case 0: // 0 不作任何修改
 	case 1:
 		transforms = append(transforms, "rotate(90)")
 	case 2:
@@ -92,6 +104,11 @@ func (i *Icon) write(w io.Writer) (err error) {
 		return fmt.Errorf("rotate 值 %d 无效", i.Rotate)
 	}
 
-	_, err = fmt.Fprintf(w, svgFormat, i.Left, i.Top, i.Width, i.Height, i.Body)
+	body := i.Body
+	if len(transforms) > 0 {
+		body = `<g transform="` + strings.Join(transforms, " ") + `">` + body + "</g>"
+	}
+
+	_, err = fmt.Fprintf(w, svgFormat, i.Left, i.Top, i.Width, i.Height, body)
 	return err
 }

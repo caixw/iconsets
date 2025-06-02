@@ -7,6 +7,7 @@ package main
 import (
 	"archive/zip"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,21 +17,28 @@ import (
 const url = "https://github.com/iconify/icon-sets/archive/refs/tags/%s.zip"
 
 func main() {
-	id := "bytesize"
-	ver := "2.2.342"
+	id := flag.String("iconset", "", "指定图标集，为空表示所有。")
+	ver := flag.String("ver", "", "指定图标集的版本，不能为空。")
+	fx := flag.String("fx", "", "指定适用的框架，不能为空。")
+	flag.Parse()
 
-	z, err := download(ver)
+	f, found := frameworks[*fx]
+	if !found {
+		panic(fmt.Sprintf("不支持参数 fx 指定的框架：%s\n", *fx))
+	}
+
+	z, err := download(*ver)
 	if err != nil {
 		panic(err)
 	}
 
-	pkg, err := newPkg(&solid{}, z, ver)
+	pkg, err := newPkg(f, z, *ver)
 	if err != nil {
 		panic(err)
 	}
 	defer pkg.close()
 
-	if err = pkg.createIconSet(id); err != nil {
+	if err = pkg.createIconSets(*id); err != nil {
 		panic(err)
 	}
 }

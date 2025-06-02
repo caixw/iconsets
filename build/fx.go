@@ -9,6 +9,10 @@ import (
 	"io"
 )
 
+var frameworks = map[string]framework{
+	"solid": &solid{},
+}
+
 // 每一种前端框架需要实现的接口
 type framework interface {
 	// 框架名称
@@ -20,7 +24,7 @@ type framework interface {
 	writeProps(io.Writer) ([]string, error)
 
 	// 输出单个图标的组件表示形式
-	writeIcon(io.Writer, string, *Icon) error
+	writeIcon(io.Writer, *Set, string, *Icon) error
 }
 
 //--------------------------- solid ----------------------------------
@@ -42,13 +46,13 @@ func (*solid) writeProps(w io.Writer) ([]string, error) {
 	return []string{props}, err
 }
 
-func (*solid) writeIcon(w io.Writer, name string, icon *Icon) error {
+func (*solid) writeIcon(w io.Writer, s *Set, name string, icon *Icon) error {
 	_, err := io.WriteString(w, "export function "+toCamel(name)+"(props: Props): JSX.Element {\n	return ")
 	if err != nil {
 		return err
 	}
 
-	if err := icon.write(w); err != nil {
+	if err := s.write(w, icon); err != nil {
 		return err
 	}
 
