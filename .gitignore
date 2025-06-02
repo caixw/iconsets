@@ -23,3 +23,7 @@ go.work.sum
 
 # env file
 .env
+
+build/download/
+node_modules/
+.DS_Store
