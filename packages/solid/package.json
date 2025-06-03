@@ -1,0 +1,55 @@
+{
+    "name": "@iconsets/solid",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "基于 https://iconify.design/ 的 solid 图标组件",
+    "author": {
+        "name": "caixw",
+        "url": "https://caixw.io"
+    },
+    "homepage": "https://github.com/caixw/iconsets",
+    "bugs": {
+        "url": "https://github.com/caixw/iconsets/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/caixw/iconsets",
+        "directory": "packages/solid"
+    },
+    "keywords": [
+        "icon",
+        "icon-set",
+        "solid"
+    ],
+    "license": "MIT",
+    "files": [
+        "lib/",
+        "README.md",
+        "LICENSE"
+    ],
+    "types": "./lib/index.d.ts",
+    "module": "./lib/index.js",
+    "exports": {
+        ".": {
+            "types": "./lib/index.d.ts",
+            "import": "./lib/index.js"
+        }
+    },
+    "scripts": {
+        "build": "vite build"
+    },
+    "dependencies": {
+        "solid-js": "catalog:"
+    },
+    "devDependencies": {
+        "@types/node": "catalog:",
+        "typescript": "catalog:",
+        "vite": "catalog:",
+        "vite-plugin-dts": "catalog:",
+        "vite-plugin-static-copy": "catalog:",
+        "vitest": "catalog:"
+    },
+    "overrides": {
+        "@asamuzakjp/css-color": "3.0.12"
+    }
+}

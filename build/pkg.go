@@ -52,7 +52,7 @@ func newPkg(fx framework, z *zip.ReadCloser, ver string) (*pkg, error) {
 
 	var prop string
 	if len(props) > 0 {
-		prop := strings.Join(props, ", ")
+		prop = strings.Join(props, ", ")
 		if _, err = fmt.Fprintf(index, "export type { %s } from './%s';\n\n", prop, propsFile); err != nil {
 			return nil, err
 		}
@@ -119,6 +119,8 @@ func (p *pkg) createIconSets(iconsets string) error {
 }
 
 // 为当前框架创建一图标集
+//
+// path 图标集在 p.zip 中的位置。
 func (p *pkg) createIconSet(path string) error {
 	fmt.Printf("准备创建图标集 %s\n", path)
 	defer fmt.Printf("完成创建图标集 %s\n", path)
@@ -143,10 +145,11 @@ func (p *pkg) createIconSet(path string) error {
 		return err
 	}
 
-	_, err = fmt.Fprintf(p.index, "export * as %s from './%s'\n", path, path)
+	_, err = fmt.Fprintf(p.index, "export * from './%s'\n", name)
 	return err
 }
 
+// path 图标集在 outDir 中的位置
 func (p *pkg) genComponents(set *Set, path string) error {
 	f, err := os.Create(path)
 	if err != nil {
@@ -163,7 +166,7 @@ func (p *pkg) genComponents(set *Set, path string) error {
 		return err
 	}
 
-	if _, err = f.WriteString("import { JSX } from 'solid-js';\n\n"); err != nil {
+	if _, err = f.WriteString("import { JSX, mergeProps } from 'solid-js';\n\n"); err != nil {
 		return err
 	}
 

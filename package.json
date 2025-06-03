@@ -1,0 +1,30 @@
+{
+    "name": "@iconsets/root",
+    "version": "0.1.0",
+    "type": "module",
+    "private": true,
+    "engines": {
+        "node": ">=22.0.0"
+    },
+    "author": {
+        "name": "caixw",
+        "url": "https://caixw.io"
+    },
+    "homepage": "https://github.com/caixw/iconsets",
+    "bugs": {
+        "url": "https://github.com/caixw/iconsets/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/caixw/iconsets"
+    },
+    "license": "MIT",
+    "workspaces": [
+        "packages/solid"
+    ],
+    "scripts": {
+        "lint": "eslint",
+        "test": "vitest --coverage.enabled true",
+        "test-nowatch": "vitest run --coverage.enabled true"
+    }
+}

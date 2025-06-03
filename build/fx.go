@@ -7,6 +7,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"strings"
 )
 
 var frameworks = map[string]framework{
@@ -35,27 +36,51 @@ func (*solid) name() string { return "solid" }
 
 func (*solid) writeProps(w io.Writer) ([]string, error) {
 	props := "Props"
+	presetProps := "presetProps"
 	_, err := fmt.Fprintf(w, `export type %s = VoidProps<{
+	/**
+	 * 图标的高度，默认为 1rem
+	 */
 	height?: string;
+
+	/**
+	 * 图标的宽度，默认为 1rem
+	 */
 	width?: string;
-	colors?: Map<string, string>;
 }>;
 
-`, props)
+export const %s: Props = {
+	height: '1rem';
+	width: '1rem';
+} as const;
 
-	return []string{props}, err
+`, props, presetProps)
+
+	return []string{props, presetProps}, err
 }
 
+const solidComponentString = `export function %s(props: Props): JSX.Element {
+	props = mergeProps(presetProps, props);
+	return <svg xmlns="http://www.w3.org/2000/svg" width={props.width} height={props.height} viewBox="%g %g %g %g">
+		%s
+	</svg>;
+}
+
+`
+
 func (*solid) writeIcon(w io.Writer, s *Set, name string, icon *Icon) error {
-	_, err := io.WriteString(w, "export function "+toCamel(name)+"(props: Props): JSX.Element {\n	return ")
+	transforms, err := icon.transform()
 	if err != nil {
 		return err
 	}
 
-	if err := s.write(w, icon); err != nil {
-		return err
+	body := icon.Body
+	if len(transforms) > 0 {
+		body = `<g transform="` + strings.Join(transforms, " ") + `">` + body + "</g>"
 	}
 
-	_, err = io.WriteString(w, "}\n\n")
+	io.WriteString(w, "// "+name+"\n")
+	width, height := icon.size(s)
+	_, err = fmt.Fprintf(w, solidComponentString, toCamel(s.Prefix)+toCamel(name), icon.Left, icon.Top, width, height, body)
 	return err
 }

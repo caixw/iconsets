@@ -1,6 +1,6 @@
-# icons
+# solid
 
-基于 [iconify](https://iconify.design/) 的图标库
+[iconify](https://iconify.design/) 图标库的 solid 组件表示形式
 
 ## 版权
 

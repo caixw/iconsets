@@ -6,7 +6,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"strings"
 	"unicode"
 )
@@ -61,27 +60,7 @@ func toCamel(name string) string {
 	return strings.Join(words, "")
 }
 
-const svgFormat = `<svg xmlns="http://www.w3.org/2000/svg" width={props.width} height={props.height} viewBox="%g %g %g %g">
-	%s
-</svg>`
-
-// 转换为 svg 图片
-func (s *Set) write(w io.Writer, i *Icon) (err error) {
-	if i.Width == 0 {
-		if s.Width > 0 {
-			i.Width = s.Width
-		} else {
-			i.Width = 16
-		}
-	}
-	if i.Height == 0 {
-		if s.Height > 0 {
-			i.Height = s.Height
-		} else {
-			i.Height = 16
-		}
-	}
-
+func (i *Icon) transform() ([]string, error) {
 	transforms := []string{}
 	switch { // 翻转属性
 	case i.HFlip && i.VFlip:
@@ -101,14 +80,30 @@ func (s *Set) write(w io.Writer, i *Icon) (err error) {
 	case 3:
 		transforms = append(transforms, "rotate(270)")
 	default:
-		return fmt.Errorf("rotate 值 %d 无效", i.Rotate)
+		return nil, fmt.Errorf("rotate 值 %d 无效", i.Rotate)
 	}
 
-	body := i.Body
-	if len(transforms) > 0 {
-		body = `<g transform="` + strings.Join(transforms, " ") + `">` + body + "</g>"
+	return transforms, nil
+}
+
+func (i *Icon) size(s *Set) (w, h float32) {
+	w = i.Width
+	if w == 0 {
+		if s.Width > 0 {
+			w = s.Width
+		} else {
+			w = 16
+		}
 	}
 
-	_, err = fmt.Fprintf(w, svgFormat, i.Left, i.Top, i.Width, i.Height, body)
-	return err
+	h = i.Height
+	if h == 0 {
+		if s.Height > 0 {
+			h = s.Height
+		} else {
+			h = 16
+		}
+	}
+
+	return w, h
 }
