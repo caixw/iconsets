@@ -21,10 +21,5 @@
     "license": "MIT",
     "workspaces": [
         "packages/solid"
-    ],
-    "scripts": {
-        "lint": "eslint",
-        "test": "vitest --coverage.enabled true",
-        "test-nowatch": "vitest run --coverage.enabled true"
-    }
+    ]
 }

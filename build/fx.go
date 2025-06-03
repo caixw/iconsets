@@ -50,8 +50,8 @@ func (*solid) writeProps(w io.Writer) ([]string, error) {
 }>;
 
 export const %s: Props = {
-	height: '1rem';
-	width: '1rem';
+	height: '1rem',
+	width: '1rem'
 } as const;
 
 `, props, presetProps)
